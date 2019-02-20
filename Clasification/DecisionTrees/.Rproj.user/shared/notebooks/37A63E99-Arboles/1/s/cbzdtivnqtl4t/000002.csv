@@ -1,0 +1,21 @@
+"0","library(ROCR)"
+"2","Loading required package: gplots
+"
+"2","
+Attaching package: ‘gplots’
+
+"
+"2","The following object is masked from ‘package:stats’:
+
+    lowess
+
+"
+"0","library(rpart)"
+"0","library(rpart.plot)"
+"0","set.seed(123)"
+"0","arbol <- rpart(cat2 ~ ., "
+"0","               data=datos_train, "
+"0","               method=""class"","
+"0","               parms=list(split=""information""))"
+"2","Error in is.data.frame(data) : object 'datos_train' not found
+"

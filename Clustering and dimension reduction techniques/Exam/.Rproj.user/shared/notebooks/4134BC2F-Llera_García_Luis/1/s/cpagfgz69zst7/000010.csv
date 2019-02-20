@@ -1,0 +1,1 @@
+"0","viajeros.eclust.j <- eclust(segundo_150_sca, ""kmeans"", k = 2)"

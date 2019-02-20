@@ -1,0 +1,61 @@
+---
+title: "Examen_Final_Predicción"
+author: "Luis Llera García"
+date: "1 de febrero de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(boot)
+library(dplyr)
+require(cluster)
+require(fpc)
+require(factoextra)
+require(dplyr)
+library(dendextend)
+require(ggrepel)
+library(MASS)
+require(NbClust)
+library(memisc)
+library(haven)
+library(foreign)
+library(dplyr)
+library(factoextra)
+library(cluster)
+library(factoextra)
+require(clustertend)
+library("NbClust")
+library(FactoMineR)
+library(ggplot2)
+
+```
+*Moldelo de Regresión Logística*
+Primeramente realizamos la carga de las librerías. 
+```{r, include=FALSE,echo=FALSE}
+datos <- read.csv('EGT2010_2017.csv')
+datos_filtrados <- datos[, c(81:93, 3, 4, 6, 21, 72, 112, 110, 109, 80, 151, 146)]
+which(is.na(datos_filtrados))
+datos_filtrados <- na.omit(datos_filtrados)
+datos_filtrados$VALORACION_MEDIO_AMBIENTE <- ifelse(as.integer(datos_filtrados$VALORACION_MEDIO_AMBIENTE) < 8, 0, 1)
+
+summary(datos_filtrados)
+set.seed(1234)
+
+primer_df <- datos_filtrados %>% filter(datos_filtrados$AÑO <= 2014)
+segundo_df <- datos_filtrados %>% filter(datos_filtrados$AÑO > 2014)
+
+train1 <- primer_df[sample(nrow(primer_df), 150), ]
+test1 <- segundo_df[sample(nrow(segundo_df), 150),]
+
+##Eliminamos objetos innecesarios para trabajar mejor
+rm(datos)
+rm(primer_df)
+rm(segundo_df)
+```
+
+
+
+```{r pressure, echo=FALSE}
+
+```
+

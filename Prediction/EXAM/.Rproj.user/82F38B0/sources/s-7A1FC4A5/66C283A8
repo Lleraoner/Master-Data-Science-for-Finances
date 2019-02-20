@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1549010508017.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "66C283A8",
+    "lastKnownWriteTime" : 1548972527,
+    "last_content_update" : 1549012290610,
+    "path" : "C:/Users/llera/OneDrive/Escritorio/EXAMEN PREDICCION/PrediccionRegresionLogistica.R",
+    "project_path" : "PrediccionRegresionLogistica.R",
+    "properties" : {
+        "cursorPosition" : "156,0",
+        "scrollLine" : "147"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

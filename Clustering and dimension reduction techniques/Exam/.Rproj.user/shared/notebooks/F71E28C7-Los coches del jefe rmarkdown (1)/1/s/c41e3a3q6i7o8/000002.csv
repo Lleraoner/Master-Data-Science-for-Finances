@@ -1,0 +1,3 @@
+"0","##Defino las dos correlaciones"
+"0","correlaciondata_pca <- cor(primer_150_unido)"
+"0","correlacion_data_pca_2 <- cor(primer_150_limpio)"

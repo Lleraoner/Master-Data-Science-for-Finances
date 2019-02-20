@@ -1,0 +1,7 @@
+"0","monthlyData <- to.monthly(d.data)"
+"0","zMonthlyData <- as.zoo(monthlyData$d.data.Close)"
+"0","names(zMonthlyData) <- 'Mensual'"
+"0","#Primera aproximacion mensual"
+"0","autoplot(zMonthlyData) + geom_point() +"
+"0","  ylab(""Ventas"") + ggtitle(""Cuota mensual"") + xlab(""Semanas"") + "
+"0","  ggtitle('Representacion mensual')"

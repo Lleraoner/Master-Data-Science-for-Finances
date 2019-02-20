@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1543341410845.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3413641121",
+    "id" : "8ACABA31",
+    "lastKnownWriteTime" : 1543341441,
+    "last_content_update" : 1543341441284,
+    "path" : "C:/Users/LUIS/OneDrive/GitProjects/Visualizacion/Dashboard/server.R",
+    "project_path" : "server.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

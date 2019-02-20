@@ -1,0 +1,144 @@
+---
+title: "Problema1"
+author: "Luis Llera García"
+date: "11 de febrero de 2019"
+output: pdf_document
+---
+FASE 1: Formulamos la pregunta de negocio
+
+¿Que problema de negocio tenemos y que mejor análisis estadístico le podemos aplicar a los datos para su mejor tratamiento y su mejor respuesta ante un problema de negocio.
+
+FASE 2: Los Datos
+
+Comezamos con un primer vistazo de los datos, y habrá que analizarlos para observar cual es el mejor tratamiento de los mismos.
+
+FASE TRES: CHEQUEO DEL OBJETO Y CARACTERISTICAS
+
+*Análisis exploratorio de datos*
+```{r ,echo=TRUE, include=TRUE}
+library(ggplot2)
+library(markovchain)
+library(ggpubr)
+datos <- read.csv('E:/MDS/datos_20022019.csv', sep = ';')
+
+
+datos$X <- NULL
+datos$A <- as.numeric(datos$A)
+datos$B <- as.numeric(datos$B)
+
+```
+Primeramente debemos de analizar tanto la estructura como sus carcterísticas principales, dimensiones por ejemplo.
+Utilizamos la función summary para analizar los cuartiles, sus medias, mediana... Por tanto, como podemos observar existen diferencias de medias.
+
+```{r ,echo=TRUE, include=TRUE}
+summary(datos)
+str(datos)
+dim(datos)
+```
+
+Nuestra estructura de datos es la siguiente tenemos 28 observaciones distribuido en dos variables, que nos marcan el numero de transacciones y la cuantía de las mismas. Son de tipo ínteger(numérico).
+
+FASE CUATRO:
+
+Uno de los primeros test que podemos aplicar es el test de Shapiro que es un test que comprueba si la distribución de nuestra variable se distribuye como una normal o no.  
+```{r}
+sh <- shapiro.test(datos[,1])
+sh
+
+```
+Como podemos observar nuestro P valor es mayor que 0.05 por tanto aceptamos la hipóteris nula de que nuestros datos se distribuyen como una normal. Este test es muy importante ya que en los análisis estadísticos las variables normalizadas son una de las premisas de análisis como el discriminante, por ejemplo. Por tanto, es vital el análisis de la normalidad para las variables si queremos aplicarle análisis estadísticos.
+
+
+FASE CINCO: VALIDAR CON AL MENOS UNA FUENTE EXTERNA
+
+Lo que vamos a realizar es un contraste de hipótesis de bondad del ajuste,el cual, mide la discrepancia entre una distribución tomada y una teórica. Las hipótesis son las siguientes.
+H:0 <- igualdad de distribuciones
+H:1 <- No igualdad de distribuciones
+
+Primeramente realizaremos la prueba de equiporbabilidad, que como podemos ver su P-valor es inferior al 0.05 y por tanto existen diferencias significativas y no se acepta H:0.
+
+```{r ,echo=TRUE, include=TRUE}
+#Equi
+res <- chisq.test(datos, p = c(1/5, 1/5, 1/5,1/5,1/5))
+res
+#No equi
+res <- chisq.test(datos, p = c(1/3, 1/3, 1/6,0.08333335,0.08333335))
+
+res$parameter
+
+```
+Por tanto ahora analizamos la muestra con probabidades diferentes y nos arroja el mismo P-valor, por tanto,rechazaremos H0, y las contrastamos con los valores esperados y por tanto la conclusión es que las proporciones observadas son significativamente diferentes de las proporciones esperadas. 
+Por tanto como rechazamos H0, el test chi2 si rechazamos la hipótesis nula , las desviaciones no son aleatorias si no que se deben a errores en el planteamiento de la hipótesis, como podría ser el sesgo, con 27 df(grados de libertad).
+
+Por  tanto, al contrastar los datos esperados con los datos observados se puede ver que existen diferencias significativas entre ambos. El test Chi2 también se utiliza en contrastes de independendencia.
+Este es muy utilizado sobre todo en modelos predictivos, como el Arima, o ETS.
+
+```{r ,echo=TRUE, include=TRUE}
+head(res$expected,3)
+head(res$observed,3)
+```
+El test Chi2 también se utiliza en contrastes de independendencia 
+
+Test Chicuadrado de independencia
+Hipotesis nula (H0): Las variables son independientes.
+Hipotesis alternativa(H1): las variables son dependientes.
+En nuestro caso se rechaza H0, ya que es el mismo test, por tanto cabe suponer que existe una dependencia entre los diferentes dias del mes y las ventas que posee.
+
+Este es muy importante ya que nos informa de como explica una variable la otra y viceversa.
+
+Fase 6:representación gráfica.
+
+Como podemos observar aparentemente los datos no se distribuyen como una normal, como ya hemos contrastado anteriormente.
+```{r ,echo=TRUE, include=TRUE}
+colnames(datos) <- c('x','y')
+ggplot(datos,aes(x,y))+geom_smooth()
+```
+
+
+*Marokv*
+
+Uno de los objetivos es contruir modelos que nos permitan explicar la estructura de una variable a lo largo del tiempo para estudiar su evolución a corto plazo y al largo plazo lo estudiaremos de la misma manera. Estamos ante unas variables de tipo socioeconómico. La caraterística que tienen dichos procesos es que las distribuciones de Xn+1 dependen de Xn.
+
+Primeramente construimos la matriz con las diferentes probabilidades, asi como son sus probabilidades de transición. Dicha matriz tiene la siguiente forma. Es una matriz de 3x3 en la que se encuentran los diferentes estados en los que nos podemos encontrar que son "Superavit", "Saldo 0" y "Deficit".
+```{r ,echo=TRUE, include=TRUE}
+library(markovchain)
+
+datos_markov <-matrix(c(0,0.5,0.5,0.33,0.34,0.33,0.25,0.25,0.5), nrow=3, byrow = TRUE)
+cmmt<- new("markovchain", transitionMatrix=datos_markov, states=c("Superavit", "Saldo 0", "Deficit"), name="CADENA DE MARKOV")
+cmmt
+```
+
+```{r ,echo=TRUE, include=TRUE}
+plot(cmmt)
+```
+Como podemos observar en nuestro gráfico se muestran las probabilidades de pasar de un estado a otro que son las probabilidades de transición y las flechas que vuelven a cada nodo indican la probabilidad de estando en un estado volver al mismo.
+
+Ahora realizamos un ejemplo si estando primeramente en la situación de Saldo 0 que probabilidades existen tando de "Superavit" como "Saldo 0" y "Deficit".
+```{r ,echo=TRUE, include=TRUE}
+vInicial<- c(0,1,0)
+pasos <- 3
+estFinal<- vInicial*cmmt^pasos
+estFinal
+```
+Nuestro estado final posee estas proporciones, que son aquellas que se dan cuado han pasado 3 periodos, este ejemplo lo hemos realizado para compararlo con el  del largo plazo.
+Superavit  Saldo 0  Deficit
+0.230373 0.331354 0.438273
+
+
+
+Para establecer las proporciones a largo plazo utilizar la siguiente función, y nos arroja los siguientes resultados.
+```{r ,echo=TRUE, include=TRUE}
+steadyStates(cmmt)
+```
+Las proporcioes en el largo plazo son las siguientes y la proporción de meses con Superavit es de 0.2214765, que es la proporción menor, la cual será la menos probable que se repita bajo las probabilidades establecidas. Y como podemos observar no existe una diferencia considerable entre las proporciones del largo plazo y el corto plazo.
+
+Superavit   Saldo 0  Deficit 
+0.2214765 0.3355705 0.442953
+
+*Conclusion*
+
+Al realizar todo esto se puede deducir que la probabilidad de déficit a largo plazo se aproxima al 50%, cosa que se puede haber visto influida por la situación inicial, esto influye de manera muy significativa en la proporcion de superavit.
+
+
+
+

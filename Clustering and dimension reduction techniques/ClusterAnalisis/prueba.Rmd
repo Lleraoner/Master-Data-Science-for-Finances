@@ -1,0 +1,36 @@
+---
+title: "Los coches del jefe 3"
+author: "Luis Llera García"
+date: "20 de diciembre de 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+
+```
+
+El objetivo de este informe será concluir con la distribución de todos los coches de nuestro jefe, los cuales quedaban distribuidos en la práctica anterior, esta es la tercera y última parte de los coches del jefe.
+Primeramente nuestro objetivo era establecer un conjunto de grupos a partir de una base de datos que nos aportaba la información, eran 125 coches. Por tanto siguiendo los requisitos del análisis cluster considerar que cada grupo debe ser homogéneo respecto de alguna característica entre las observaciones, grupos similares entre si y considerar que cada grupo debe ser diferente de los dema´s respecto de las mismas caracter´ıstica, grupos heterogéneos entre si.
+
+Nos basamos del análisis de componentes principales para realizar la selección de variables,el cual busca determinar de algu´n modo las relaciones ´ıntimas existentes entre todas las variables. Su objetivo primario es construir nuevas variables, artiﬁciales, a partir de combinaci´on lineal de las originales, con la caracter´ıstica de ser independientes entre s´ı. Con ello el análisis nos arrojó los siguientes resultados.
+
+• Potencia
+• RPM
+• Peso
+• Consumo urbano
+• Velocidad
+
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

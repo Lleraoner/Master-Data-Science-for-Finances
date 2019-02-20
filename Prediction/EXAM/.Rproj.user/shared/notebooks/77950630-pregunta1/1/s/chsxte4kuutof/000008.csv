@@ -1,0 +1,2 @@
+"0","#add cutoff line	"
+"0","text(x=1:length(cooksd)+1, y=cooksd, labels=ifelse(cooksd>4*mean(cooksd, na.rm=T),names(cooksd),""""), col=""red"")"

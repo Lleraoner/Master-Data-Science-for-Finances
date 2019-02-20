@@ -1,0 +1,4 @@
+"0","library(cluster)"
+"0","library(factoextra)"
+"0","set.seed(123)"
+"0","pam_clusters <- pam(x = cochesescalados, k = 6, metric = ""manhattan"")"

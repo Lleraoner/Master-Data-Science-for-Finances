@@ -1,0 +1,4 @@
+"0","#Realizamos la representación gráfica."
+"0","fviz_dist(qdist, lab_size = 5)"
+"2","Error in fviz_dist(qdist, lab_size = 5) : object 'qdist' not found
+"

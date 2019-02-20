@@ -1,0 +1,2 @@
+"0","coches.eclust = eclust(cochesescalados, FUNcluster = ""pam"", stand = TRUE,"
+"0","                       hc_metric = ""euclidean"", k = 6)"

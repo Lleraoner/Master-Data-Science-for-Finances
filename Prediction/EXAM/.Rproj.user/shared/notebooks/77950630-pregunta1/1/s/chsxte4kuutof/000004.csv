@@ -1,0 +1,4 @@
+"0","#Con el fin de determinar outliers, se realiza la matriz de distancias de Cooks. Como se observa, hay tres puntos que son outliers;"
+"0","#sin embargo, esta técnica no nos dice como afectan al modelo. Puesto que solo hay tres puntos, seguimos con el modelo."
+"0","cooksd <- cooks.distance(modelo_bueno_training)"
+"0","plot(cooksd, pch='*', cex = 2, main = 'Observaciones influyentes por distancia de Cook')"

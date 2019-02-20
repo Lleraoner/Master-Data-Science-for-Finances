@@ -1,0 +1,5 @@
+"0","library(rgl)"
+"0","cl <- kmeans(primer_150_sca,2)"
+"0","factorKmeans <- as.factor(cl$cluster)"
+"0","pc <- princomp(primer_150_unido, cor=TRUE, scores=TRUE)"
+"0","plot3d(pc$scores, col= factorKmeans, main=""k-means clusters"")"

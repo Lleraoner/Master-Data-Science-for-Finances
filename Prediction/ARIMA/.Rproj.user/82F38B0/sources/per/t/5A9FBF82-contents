@@ -1,0 +1,256 @@
+---
+title: "Práctica final"
+author: "Luis Llera García"
+date: "17 de enero de 2019"
+output: pdf_document 
+---
+##*EXECUTIVE SUMMARY* 
+
+El problema de la predicción es una problema existente extrapolable a todos los campos de la economía que generalmente exige una serie de técnicas tanto estadísticas como econométricas muy complejas. Por tanto, en este informe trataremos de estimar y diagnosticar modelos dinámicos de series temporales en los que la variable tiempo juega un papel fundamental.
+Dentro de los modelos utilizados para predecir dicha variable se desarrollarán los conocidos modelos univariables ARIMA, y por último complementaremos nuestro análisis incorporando al estudio los conocidos modelos de transferencia, los cuales, son una herramienta que puede ser útil para  evaluar impactos en las empresas y con ello reconducir los outliers representativos, en nuestro caso, como veremos más adelante será el outlier 135, que coincide con la primera semana de agosto, que fué cuando se produjo un acto en el que el Consejo de Terapéutica Dental de la American Dental Association (ADA) aprobó a Crest como una "ayuda importante en cualquier programa de higiene dental" lo que conllevó a un aumento de las ventas de Crest y las mismas no volvieron nunca al estado original ya que previamente antes del escalon se estaba produciendo un aumento progresivo de los datos, por lo tanto identificamos esta variación como un ‘Step’ no como un ‘Impulso’.
+De todos los procesos estocásticos conocidos, tendremos en cuenta principalmente dos de ellos, ruido blanco, el cual es una sucesión de variables aleatorias con esperanza igual a cero, varianza constante e independiente para diferentes valores de t(covarianza nula).
+La palabra ARIMA son las siglas Modelos Autorregresivos Integrados de Medias Móviles. Es un modelo autoregresivo, significa que si la variable endógena durante un periodo se puede explicar mediante sucesos pasados y añadiéndole un término del error. Si tiene una distribución normal, la teoría nos indica que bajo ciertas condiciones previas, toda la Ysubt la podemos expresarla como una combinación lineal de sus valores pasados, debemos asegurarnos que es una serie estacionaria y si no lo es debemos de transformar la serie original. Utilizaremos tanto el análisis gráfico como el econométrico para analizar la tendencia y la estacionaridad de los datos. Realizaremos la predicción sobre las ultimas 16 semanas de la empresa Crest y de Colgate.
+Una de sus ventajas es proporcionar predicciones óptimas, y nos permite elegir entre un amplio rango de distintos modelos que represente el mejor comportamiento de los datos. Y tiene una serie de requisitos como el principio de parsimonia, el cual, es utilizado normalmente en matemáticas que lo que nos indica que es mejor utilizar un polinomio simple a diferencia de un polinomio complejo.
+Se exige que  la serie temporal que estemos tratando sea estacionaria ya que eso permite ajustar mucho mejor la media y varianza, otros supuestos como el de ruido blanco.También hay que tener en cuenta la bondad del ajuste, es decir que el modelo se ajuste bien a los datos, y evidentemente que las predicciones sean correctas. 
+Antes de realizar el modelo Arima, tendremos que realizar el tratamiento y limpieza o depuración de los datos, que en este caso no nos ha llevado demasiado tiempo simplemente hemos tenido que generar una secuencia de fechas y pasar a formato zoo los datos que tenemos.
+Tanto la depuración de los datos como el modelo ARIMA los hemos realizado con el programa R-Studio, interfaz de R.
+
+La formulacion de modelos ARIMA permite incluir algunos de los modelos de alisado esponencial, una de las equivalencias más importantes son las de un alisado explonencial simple, del que hablaremos más adelante. Nuestro parámetro de media movil 0 coincide con 1-alfa,siendo alfa el parámetro aislado. Por tanto, el objetivo de este informe será determinar si los efectos sobre la empresa 'Crest' influyen en 'Colgate'.
+
+
+
+```{r setup, include=FALSE,echo=FALSE}
+library(openxlsx)
+library(forecast)
+library(xts)
+library(ggplot2)
+library(ggfortify) #Plot Monthplot
+library(TSA)
+library(lmtest)
+library(astsa)
+library(Hmisc)
+
+set.seed(123)
+datosCompletos <- read.xlsx('data.xlsx', colNames = T)
+str(datosCompletos)
+
+## Análisis Exploratorio de Datos ##
+
+#Dado que el fichero inicial no tiene NA's los demás tampoco los tendrán
+sum(is.na(datosCompletos))
+
+#Todas son variables de tipo numerico
+#Tendremos que trabajar la columna de la fecha y las semanas
+
+cuotaCrest <- datosCompletos$Crest
+cuotaColgate <- datosCompletos$Colgate
+
+generateDate <- seq(as.Date('1958/01/08'), as.Date('1963/04/23'), by = 'week')
+
+xCuotaCrest <- xts(cuotaCrest, order.by = generateDate)
+xCuotaColgate <- xts(cuotaColgate, order.by = generateDate)
+
+#Vamos a pasarlo a trimestre para operar mejor
+xCuotaCrest <- to.weekly(xCuotaCrest)
+zCuotaCrest <- as.zoo(xCuotaCrest$xCuotaCrest.Close)
+
+xCuotaColgate <- to.weekly(xCuotaColgate)
+zCuotaColgate <- as.zoo(xCuotaColgate$xCuotaColgate.Close)
+
+names(zCuotaCrest) <- 'CuotaMercado'
+names(zCuotaColgate) <- 'CuotaMercado'
+```
+
+##*ANALISIS EXPLORATORIO DE DATOS*
+
+Como científico de datos vamos a comenzar el análisis con la limpieza y la depuración de los datos. Nuestros datos se componen de 276 observaciones y 4 variables, las variables son ‘Crest’ que corresponde a la cuota de mercado de dicha empresa al igual que ‘Colgate’, y las dos restantes son el año y la semana correspondiente a cada empresa. 
+Nuestra muestra abarcará todos nuestros datos dejando fuera las últimas 16 semanas, que son aquellas sobre las que queremos realizar la predicción de las cuotas de mercado de dichas empresas con el modelo ARIMA.
+Primeramente, debemos de representar ambas empresas a lo largo de los años:
+Como podemos observar en el caso de crest, tiene una clara tendencia alcista a lo largo de toda la serie pero especialmente desde el verano del año 1960, la estacionalidad brilla por su ausencia, en una semana pasa de tener una cuota de mercado del 0.211 al 0.309, que intuitivamente coincide con la primera semana de agosto que fue cuando se produjo el acto comentado en la introducción. 
+
+
+
+```{r, include=TRUE, echo=TRUE,out.width='225px', out.height='225px',fig.align='center'}
+#Primera aproximacion
+autoplot(zCuotaCrest) + geom_point() +
+  ylab("Ventas")+ggtitle("Cuota semanal Crest")+xlab("Semanas") + 
+  ggtitle('Representacion Crest')
+
+autoplot(zCuotaColgate) + geom_point() +
+  ylab("Ventas") + ggtitle("Cuota semanal Colgate") + xlab("Semanas") + 
+  ggtitle('Representacion Colgate')
+```
+Como podemos observar en la gráfica los valores de 'Crest' aumentan constantemente, sin volver en ningún momento a su estado inicial, eso denota que estamos ante un 'escalón' o 'step' y no un 'impulso' o 'pulse', ya que las medias no vuelven a los valores iniciales.
+Y muestra una tendencia alcista notoria y el escalón en 1960 debido al acto que tuvo lugar ahí, pero pese a eso ya tenía una tendencia mas o menos alcista, por eso cabe suponer que 'Crest' se afianzó en el mercado de dentífricos a partir de los años 60.
+
+Como podemos observar Colgate tiene prácticamente la misma representación que 'Crest' pero en sentido inverso muestra una tendencia bajista y aparentemente parece que no tiene estacionalidad. Para la implementación del modelo que queremos plantear podemos convetir la serie en estacionaria mediante logaritmos para hacer estacionaria la varianza o por diferenciación para la media por ejemplo.
+
+La función polinómica tambíen la tendremos que tener en cuenta, será en lo primero que nos tendremos que preocupar, en nuestro caso, tenemos una función polinómica, la cual, depende de los siguientes parámetros(b=1,s=0,r=0), esto nos indica que nos encontramos ante un escalón, y otra serie de indicaciones de las que hablaremos en profundidad más adelante.
+
+Como se puede observar tambien en este gráfico a parte de la ausencia de estacionariedad, podemos decir que tampoco tiene estacionalidad por que la cuota de mercado no se ve afectada por el mes en el que nos encontremos. Nuestra serie temporal es no estacionaria en media cuando tiene tendencia creciente o decreciente o cambios de nivel.
+
+```{r, echo=FALSE,include=FALSE}
+#Select number of observation to compare forecast
+#Quitamos 16 semanas de 1963
+cOmit = 16
+#Data Size
+nObs = length(zCuotaCrest)
+
+#sub_sample
+#oVentasCrest=zCuotaCrest[1:(nObs-cOmit),]
+oVentasCrest <- window(zCuotaCrest, start = index(zCuotaCrest[1]), end = index(zCuotaCrest[nObs - cOmit]))
+oVentasColgate <- window(zCuotaColgate, start = index(zCuotaColgate[1]), end = index(zCuotaColgate[nObs - cOmit]))
+
+```
+*MODELO ARIMA*
+
+Ahora comenzaremos con el modelo ARIMA propiamente dicho, entrenaremos varios modelos autoarima para contrastar los resultados, en lineas generales un modelo es estacionario, en media,varianza y autocorrelación constante. La varianza, la hacemos estacionaria con el logaritmo, y la media mediante la diferencia y la autocorrelación, que es la correlación de una variable consigo misma si es alta es algo bueno eso quiere decir que podemos predecir la variable en función de ella misma. Más tarde buscaremos limpiar los errores de ruido.
+
+
+```{r, include=TRUE,echo=TRUE, out.width='225px', out.height='225px',fig.align='center'}
+
+#ARIMA MODEL
+fit1 = auto.arima(oVentasCrest)
+fit2 = auto.arima(oVentasCrest, lambda = 0)
+
+fit3 = auto.arima(oVentasCrest, lambda = 0, approximation = F, stepwise = F)
+fit4 = auto.arima(oVentasCrest, ic = 'aic', trace = T)
+
+summary(fit4)
+```
+El modelo ARIMA, desde el punto de vista estocástico o moderno, tenemos trés parámetros de los que nos tenemos que preocupar, los cuales forman un modelo ARIMA no estacionario y se clasifica como un modelo "ARIMA (p, d, q)",que es la parte regular, y el segundo parámetro sería el estacional pero como no lo tenemos podemos deducir que no lo es no tiene este parámetro ARIMA(P,D,Q)s. 
+
+A continuación definiremos los diferentes parámetros:
+
+p es el número de términos autorregresivos, d es el número de diferencias no estacionales necesarias para la estacionariedad, y
+q es el número de errores de pronóstico retrasados en la ecuación de predicción.
+
+Como podemos observar, en las diferentes pruebas nos arrojan los mismos resultados, que el mejor modelo ARIMA es el (0,1,1), teniendo en cuenta el parámetro del AIC, elegirá al menor de ellos, que en nuestro caso es -864.15.
+
+
+```{r,include=FALSE,echo=FALSE}
+#el mejor modelo es un 011 sin estacionalidad
+
+#auto arima no da estacionalidad, tenemos que ponerla nosotros
+#Se debe al tipo de modelo de negocio. Una electrica por ejemplo depende mucho del mes en el que estemos
+#El consumo de pasta no va a cambiar durante las epocas del año, por tanto al no tener estaciones no hay estacionalidad
+
+#Ese comonente habria que agregarlo en la funcion arima no en la auto arima.
+arima.crest = auto.arima(oVentasCrest)
+summary(arima.crest)
+
+arima.colgate <- auto.arima(oVentasColgate)
+summary(arima.colgate)
+
+#Podemos usar coredata para que ignore el indice en un objeto Zoo
+#cuando hay estacionalidad hay que incluir un period
+arimabueno = arima(oVentasCrest, order = c(0,1,1))
+
+```
+
+Es un modelo conocido como 'suavizado exponencial simple', en el cual, es mejor en vez de tomar la última media como único dato, tomar el promedio de las últimas observaciones para filtrar el ruido y estimar con mayor precisión la media local. El pronóstico de suavización exponencial simple es óptimo para patrones de demanda aleatorios o nivelados donde se pretende eliminar el impacto de los elementos irregulares históricos mediante un enfoque en períodos de demanda reciente para lograr óptimos resultados.
+
+```{r,include=TRUE,echo=TRUE,out.width='225px', out.height='225px',fig.align='center'}
+#residual analysis
+ggtsdisplay(arima.crest$residuals)
+ggtsdisplay(arima.colgate$residuals)
+```
+
+Como muestra serie temporal no es estacionaria, lo que tenemos que hacer es convertirla en estacionaria, mediante la diferenciación de orden D, una buena estrategia es comparar los ACF,que son los correlogramas de de la función de autocorrelación. Como podemos observar en ambas, todos los datos se encuentran dentro de las bandas azules, eso nos indica que los residuos son ruido blanco y por tanto podemos continuar con el análisis.
+Ahora realizaremos el Text Box-Ljung, tanto con 'Colgate' como con 'Crest'.
+
+```{r, include=TRUE,echo=TRUE}
+Box.test(arima.crest$residuals,lag = 3, fitdf = 1, type = "Lj")
+Box.test(arima.colgate$residuals,lag = 3, fitdf = 1, type = "Lj")
+```
+Este test lo que nos indica es como se distribuyen los residuos de los datos, es un contraste de hipótesis en el que la hipótesis nula indica que los residuos de los datos se distribuyen de manera independiente, por tanto, eso querría decir que no existe autocorrelación entre los residuos y por tanto existe ruido blanco. Por tanto, buscamos un valor alto para nuestro P-valor con objetivo es aceptar la hipótesis nula, y eso nos indica que los residuos no tiene autocorrelación, gracias a esto podemos continuar con el análisis.
+```{r,include=TRUE,echo=TRUE,out.width='225px', out.height='225px',fig.align='center'}
+fventas.crest = forecast(arima.crest, h = 16)
+plot(fventas.crest)
+
+fventas.colgate = forecast(arima.colgate, h = 16)
+plot(fventas.colgate)
+```
+Como podemos observar, el forecast nos indica la predicción y podemos observar que tiene una predicción correcta ya que sigue la tendencia.
+
+Ahora vamos a proceder analizar los outliers tanto aditivos(afectan a la serie temporal) e innovativos(afectan al error) entonces vamos a analizar, los outliers para ambas empresas.
+```{r,include=TRUE,echo=TRUE,out.width='225px', out.height='225px',fig.align='center'}
+detectAO(arima.crest) #Outlier en 135/136/138
+detectIO(arima.crest) #Nada 
+checkresiduals(arima.crest)
+
+detectAO(arima.colgate)
+detectIO(arima.colgate)
+checkresiduals(arima.colgate)
+```
+En Crest obtenemos tres errores aditivos, a diferencia del de colgate, y con el gráfico podemos observar como los errores se distribuyen como una normal, en la semana 135 se encuentra incluida en los errores ya que fue cuando se produjo el acto que aumentó las ventas de 'Crest'.
+
+
+
+```{r,include=FALSE,echo=FALSE}
+crest.arimax = arimax(oVentasCrest, order = c(0, 1, 1), 
+                      xtransf = data.frame(primero = 1*(seq(oVentasCrest) >= 135)),
+                      xreg = data.frame(error136 = 1*(seq(oVentasCrest) == 136),
+                                        error138 = 1*(seq(oVentasCrest) == 138)),
+                      transfer = list(c(0,0)),
+                      method = 'ML')#Maxima verosimilitud
+
+colgate.arimax = arimax(oVentasColgate, order = c(0, 1, 1),
+                        xtransf = data.frame(first = 1*(seq(oVentasColgate) >= 135)
+                        ),
+                        transfer = list(c(0,0)),
+                        method = 'ML')#Maxima verosimilitud
+```
+
+
+
+```{r,include=T,echo=T,fig.align='center'}
+coeftest(crest.arimax)
+coeftest(colgate.arimax)  
+```
+Ahora realizamos el test de los coeficientes, en ambos casos la observación 135, que hemos mostrado anteriormente por la detección de outliers aditivos, tiene una significatividad alta, y por tanto será este el valor de corte en el modelo de intervención. De los dos restantes podemos prescindir.
+
+
+```{r,include=FALSE,echo=FALSE}
+library(astsa)
+library(Hmisc)
+
+crest_134 <- window(cuotaCrest, end=134) #ventas, nos quedamos con los 134 primeros porque a partir del 135 la cosa cambia
+colgate_134 <- window(cuotaColgate, end=134) #lead es publicidad, 140 primeros
+
+
+crest_134_D <- diff(crest_134) # para hacerlas estacionarias usamos diff
+colgate_134_D <- diff(colgate_134) # quitarle la media es indiferente, con usar diff sobra
+
+library(dynlm)
+```
+##*CONCLUSIONES*
+```{r,include=TRUE,echo=TRUE,fig.align='center'}
+mod0 <- arimax(colgate_134_D,
+               order=c(0,1,1),
+               include.mean=TRUE,
+               xtransf=crest_134_D,
+               transfer=list(c(0,15)), #funcion de transferencia con orden 15 numerador
+               method="ML")
+
+coeftest(mod0)
+
+```
+Estableceremos el corte en 134 debido a que coincide con la semana anterior al efecto comentado anteriormente a favor de Crest y además hemos convertido la serie para poder comparar las dos empresas, de manera gráfica, este efecto positivo afecta a Colgate y si es de manera constante durante el tiempo a partir de ese valor.
+
+Los únicos coeficientes que aportan información son el primero y el segundo, debido a ello el análisis que realizaremos a continuación se basará en estos dos coeficientes.
+
+```{r,include=FALSE,echo=FALSE}
+tsdisplay(mod0$residuals) # no es ruido blanco, falta algo en el modelo
+plot(mod0$coef[2:15], type = 'h', main = "Efecto Crest sobre Colgate")
+
+mod <- arimax(colgate_134_D, #MODELO DE FUNCION DE TRANSFERENCIA que incluye la relacion dinamica de x e y, donde la x es el impulso
+              order=c(0,1,1), #media movil 1
+              include.mean=TRUE, #la constante
+              fixed=c(NA,NA,0,0,NA),
+              xtransf=crest_134_D,
+              transfer=list(c(1,2)), #el 1 se debe a polinomio 1 denominador, polinomio 3 numerador
+              method="ML")
+```
+Como podemos observar en el gráfico de 'Efecto de Crest sobre Colgate', lo que podemos observar es que en el primer periodo de la serie se ha producido una caida muy importante dentro de las ventas de Colgate que coincide perfectamente con la medida que se realizó la primera semana de Agosto, por tanto un aumento brutal en la couta de mercado de Crest se traduce en una caida brutal dentro de la cuota de mercado de Colgate, por tanto se puede concluir que ambas empresas se influyen entre si, pero solo durante ese periodo, después al ser un escalón nos demuestra que no vuelve a la situación inicial.
+

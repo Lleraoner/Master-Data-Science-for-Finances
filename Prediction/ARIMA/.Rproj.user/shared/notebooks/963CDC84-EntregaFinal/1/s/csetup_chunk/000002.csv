@@ -1,0 +1,133 @@
+"0","library(openxlsx)"
+"0","library(forecast)"
+"2","package ‘forecast’ was built under R version 3.5.2"
+"0","library(xts)"
+"2","Loading required package: zoo
+"
+"2","
+Attaching package: ‘zoo’
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    as.Date, as.Date.numeric
+
+"
+"0","library(ggplot2)"
+"0","library(ggfortify) #Plot Monthplot"
+"2","package ‘ggfortify’ was built under R version 3.5.2"
+"0","library(TSA)"
+"2","package ‘TSA’ was built under R version 3.5.2"
+"2","
+Attaching package: ‘TSA’
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    acf, arima
+
+"
+"2","The following object is masked from ‘package:utils’:
+
+    tar
+
+"
+"0","library(lmtest)"
+"2","package ‘lmtest’ was built under R version 3.5.2"
+"0","library(astsa)"
+"2","package ‘astsa’ was built under R version 3.5.2"
+"2","
+Attaching package: ‘astsa’
+
+"
+"2","The following object is masked from ‘package:forecast’:
+
+    gas
+
+"
+"0","library(Hmisc)"
+"2","package ‘Hmisc’ was built under R version 3.5.2"
+"2","Loading required package: lattice
+"
+"2","Loading required package: survival
+"
+"2","Loading required package: Formula
+"
+"2","
+Attaching package: ‘Hmisc’
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    format.pval, units
+
+"
+"0","set.seed(123)"
+"0","datosCompletos <- read.xlsx('data.xlsx', colNames = T)"
+"0","str(datosCompletos)"
+"1","'data.frame':	"
+"1","276"
+"1"," obs. of  "
+"1","4"
+"1"," variable"
+"1","s"
+"1",":"
+"1","
+"
+"1"," "
+"1","$ "
+"1","Year   "
+"1",":"
+"1"," num  "
+"1","1958 1958 1958 1958 1958"
+"1"," ..."
+"1","
+"
+"1"," "
+"1","$ "
+"1","Week   "
+"1",":"
+"1"," num  "
+"1","1 2 3 4 5 6 7 8 9 10"
+"1"," ..."
+"1","
+"
+"1"," "
+"1","$ "
+"1","Crest  "
+"1",":"
+"1"," num  "
+"1","0.108 0.166 0.126 0.115 0.119 0.176 0.155 0.118 0.136 0.137"
+"1"," ..."
+"1","
+"
+"1"," "
+"1","$ "
+"1","Colgate"
+"1",":"
+"1"," num  "
+"1","0.424 0.482 0.428 0.397 0.352 0.342 0.434 0.445 0.428 0.395"
+"1"," ..."
+"1","
+"
+"0","## AnÃ¡lisis Exploratorio de Datos ##"
+"0","#Dado que el fichero inicial no tiene NA's los demÃ¡s tampoco los tendrÃ¡n"
+"0","sum(is.na(datosCompletos))"
+"1","[1]"
+"1"," 0"
+"1","
+"
+"0","#Todas son variables de tipo numerico"
+"0","#Tendremos que trabajar la columna de la fecha y las semanas"
+"0","cuotaCrest <- datosCompletos$Crest"
+"0","cuotaColgate <- datosCompletos$Colgate"
+"0","generateDate <- seq(as.Date('1958/01/08'), as.Date('1963/04/23'), by = 'week')"
+"0","xCuotaCrest <- xts(cuotaCrest, order.by = generateDate)"
+"0","xCuotaColgate <- xts(cuotaColgate, order.by = generateDate)"
+"0","#Vamos a pasarlo a trimestre para operar mejor"
+"0","xCuotaCrest <- to.weekly(xCuotaCrest)"
+"0","zCuotaCrest <- as.zoo(xCuotaCrest$xCuotaCrest.Close)"
+"0","xCuotaColgate <- to.weekly(xCuotaColgate)"
+"0","zCuotaColgate <- as.zoo(xCuotaColgate$xCuotaColgate.Close)"
+"0","names(zCuotaCrest) <- 'CuotaMercado'"
+"0","names(zCuotaColgate) <- 'CuotaMercado'"

@@ -1,0 +1,282 @@
+---
+title: "ExamenReduccion2019"
+author: "Luis Llera García"
+date: "30 de enero de 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE,echo=FALSE}
+# Realizamos la carga de las librerías necesarias para realizar al Cluster. 
+library(dplyr) 
+require(cluster)
+require(fpc)
+require(factoextra)
+require(dplyr)
+library(dendextend)
+require(ggrepel)
+require(NbClust)
+library(memisc)
+library(haven)
+library(foreign)
+library(dplyr)
+library(factoextra)
+library(cluster)
+library(factoextra)
+require(clustertend)
+library("NbClust")
+library(FactoMineR)
+library(ggplot2)
+library(LPCM)
+```
+
+```{r, include=FALSE,echo=FALSE}
+##REalizamos la carga de datos
+datos <- read.csv('EGT2010_2017.csv')
+str(datos)
+#Realizamos el tratamiento de datos necesarios para el examen.
+datos_filtrados <- datos[, c(81:93, 3, 4, 6, 21, 72, 112, 110, 109, 80, 151, 146)]
+which(is.na(datos_filtrados))
+
+summary(datos_filtrados)
+
+datos_filtrados_noNA <- na.omit(datos_filtrados)
+summary(datos_filtrados_noNA)
+
+primer_df <- datos_filtrados_noNA %>% filter(datos_filtrados_noNA$AÑO <= 2014)
+segundo_df <- datos_filtrados_noNA %>% filter(datos_filtrados_noNA$AÑO > 2014)
+
+set.seed(1234)
+
+primer_150 <- primer_df[sample(nrow(primer_df), 150), ]
+segundo_150 <- segundo_df[sample(nrow(segundo_df), 150),]
+
+rm(datos)
+rm(datos_filtrados)
+rm(datos_filtrados_noNA)
+rm(primer_df)
+rm(segundo_df)
+
+## Vamos a proceder a realizar la limpieza del dataframe
+str(primer_150)
+
+## Vamos a crear otro DF para realizar los clusters ##
+primer_150_limpio <- primer_150[, c(-15, -16, -18, -21, -23)]
+
+str(primer_150_limpio)
+```
+*Primera Pregunta*
+Ahora una vez realizada la limpieza del data set vamos a realizar una primera vista de los datos.
+
+
+```{r, include = T,echo=TRUE}
+summary(primer_150)
+summary(segundo_150)
+```
+Como podemos observar, existen una serie de variables con las que no vamos a poder trabajar, ya que existen algunas que son de tipo, factor, los ingresos se encuentran en una serie de rangos, los cuales, pasaremos a numéricos mas tarde. Variables como ID, no nos aportan ninguna información, por tanto las eliminaremos para realizar el análisis.
+
+Debido a los problemas que hemos mencionado anteriormente y un problema que se puede observar claramente de multicolienalidad en la matriz, y como en en el análisis cluster es nociva la presencia de dicha propiedad en las variables, vamos a realizar una nueva estructuración de nuestro data-set.
+Por tanto vamos a estructurar los ingresos como numérico e imputamos la media, y para resolver el problema de multicolienalidad, lo que haremos será agrupar las variables de alojamiento, entorno y restaurante.
+
+```{r, include=FALSE,echo=FALSE}
+
+library("dummies")
+ingresos = dummy(primer_150$INGRESOS)
+
+i1=ingresos[,1]*((12000+24000)/2)
+i2=ingresos[,2]*((24000 + 36000)/2)
+i3=ingresos[,3]*((36001 +48000)/2)
+i4=ingresos[,4]*((48001 + 60000)/2)
+i5=ingresos[,5]*((60001+72000)/2)
+i6=ingresos[,6]*((72001+84000)/2)
+i7=ingresos[,7]*((84000+12000)/2)
+
+ingresos=(i1+i2+i3+i4+i5+i6+i7)
+head(ingresos)
+
+
+primer_150_limpio$INGRESOS = ingresos
+View(primer_150_limpio)
+
+rownames(primer_150_limpio) <- primer_150_limpio$ID
+primer_150_limpio$ID <- NULL
+
+primer_150_limpio_sc <- scale(primer_150_limpio)
+primer_150_limpio_sc
+
+Alojamiento_general = (primer_150$VALORACION_ALOJ + 
+                         primer_150$VALORACION_TRATO_ALOJ + 
+                         primer_150$VALORACION_GASTRONO_ALOJ) /3
+Entorno_general = (primer_150$VALORACION_CLIMA +
+                     primer_150$VALORACION_ZONAS_BANYO + primer_150$VALORACION_PAISAJES + 
+                     primer_150$VALORACION_MEDIO_AMBIENTE + primer_150$VALORACION_TRANQUILIDAD +
+                     primer_150$VALORACION_LIMPIEZA) / 6
+Restaurante_general = (primer_150$VALORACION_CALIDAD_RESTAUR + 
+                         primer_150$VALORACION_OFERTA_GASTR_LOC + 
+                         primer_150$VALORACION_TRATO_RESTAUR +
+                         primer_150$VALORACION_PRECIO_RESTAUR) / 4
+
+str(Alojamiento_general)
+
+
+primer_150_unido <- data.frame(primer_150$IMPRESION, Alojamiento_general, Restaurante_general,Entorno_general,
+                                ingresos, primer_150$EDAD)
+primer_150_sca <- scale(primer_150_unido)
+#analisis de componentes principales necesita que estÃ© todo en una misma magnitud
+str(primer_150_unido)
+
+
+library(factoextra)
+library(FactoMineR)
+library(dplyr)
+#Analizamos las estructuras de los dos datas
+str(primer_150)
+str(segundo_150)
+
+
+str(primer_150_unido)
+
+########################Tambien tenemos que estructurar el segundo_150 para los clusteres############################################################
+Alojamiento_general_dos = (segundo_150$VALORACION_ALOJ + 
+                         segundo_150$VALORACION_TRATO_ALOJ + 
+                         segundo_150$VALORACION_GASTRONO_ALOJ) /3
+Entorno_general_dos = (segundo_150$VALORACION_CLIMA +
+                     segundo_150$VALORACION_ZONAS_BANYO + segundo_150$VALORACION_PAISAJES + 
+                     segundo_150$VALORACION_MEDIO_AMBIENTE + segundo_150$VALORACION_TRANQUILIDAD +
+                     segundo_150$VALORACION_LIMPIEZA) / 6
+Restaurante_general_dos = (segundo_150$VALORACION_CALIDAD_RESTAUR + 
+                         segundo_150$VALORACION_OFERTA_GASTR_LOC + 
+                         segundo_150$VALORACION_TRATO_RESTAUR +
+                         segundo_150$VALORACION_PRECIO_RESTAUR) / 4
+
+library("dummies")
+ingresos = dummy(segundo_150$INGRESOS)
+
+i1=ingresos[,1]*((12000+24000)/2)
+i2= ingresos[,2]*((24000 + 36000)/2)
+i3=ingresos[,3]*((36001 +48000)/2)
+i4=ingresos[,4]*((48001 + 60000)/2)
+i5=ingresos[,5]*((60001+72000)/2)
+i6=ingresos[,6]*((72001+84000)/2)
+i7=ingresos[,7]*((84000+12000)/2)
+
+ingresos=(i1+i2+i3+i4+i5+i6+i7)
+head(ingresos)
+
+segundo_150_unido <- data.frame(segundo_150$IMPRESION, Alojamiento_general, Restaurante_general,Entorno_general,
+                                ingresos, segundo_150$EDAD)
+segundo_150_sca <- scale(segundo_150_unido)
+
+
+```
+Analizamos la estructura de los dos data-frames
+
+```{r, include=FALSE,echo=FALSE}
+str(primer_150_unido)
+str(segundo_150_unido)
+```
+
+
+```{r, include=FALSE,echo=FALSE}
+
+clustend <- get_clust_tendency(correlaciondata_pca, nrow(correlaciondata_pca)-1)
+# Hopkins statistic
+
+#Obtenemos las distancias del anterior DF a través de Pearson
+qdist.pearson <- get_dist(primer_150_unido, stand = T, method = 'pearson')
+qdist.manhattan <- get_dist(primer_150_limpio_sc, stand = T, method = 'manhattan')
+qdist.mink <- get_dist(primer_150_limpio_sc, stand = T, method = 'minkowski')
+str(qdist.pearson)
+summary(qdist.pearson)
+
+dist.cor <- as.dist(1 - correlaciondata_pca)
+round(as.matrix(dist.cor),  2)
+
+#Realizamos la representación gráfica.
+
+as.matrix(as.dist(qdist.pearson))
+```
+*Segunda Pregunta - Cluster*
+Primeramente antes de realizar el Análisis Cluster, se suelen realizar una serie de pruebas previas, como el estadístico de Hopkings que es  una evaluación de la estructura intrínseca de los datos a través de una prueba de aleatoriedad espacial conocida como prueba de Hopkins,con el objetivo de observar si los sismos presentan estructuras agregadas. Se busca un resultado lo más cercano a cero posible, nuestro resultado es aceptable, pero podría ser mejor. 
+```{r, include=TRUE,echo=TRUE}
+clustend$hopkins_stat
+```
+Por tanto, con los resultados obtenidos podemos realizar, el análisis cluster, el método que utilizaremos será el K-means, el cual, es el que mejor se adecua a nuestros datos. Ya que hemos probado con otros métodos como el Clara, que no tenía sentido ya que solo tiene sentido para muestras grandes. Y el PAM, que no nos arroja malos resultados, pero contrasta con el K-means con que es más robusto y corrige outliers, cosa que no tenemos.
+Por tanto utilizaremos el K-means, que es muy bueno para ver cómo se organizan sus individuos de forma natural.
+
+*Cuarta Pregunta - Comparación de dos clusteres*
+```{r,include=TRUE, echo=TRUE}
+viajeros.eclust.j <- eclust(primer_150_sca, "kmeans", k = 2)
+fviz_nbclust(primer_150_sca, kmeans, method = "silhouette") +
+  ggtitle("Número óptimo de clusters - k medias") +
+  labs(x="Número k de clusters",y="Anchura del perfil promedio")
+viajeros.eclust.j <- eclust(segundo_150_sca, "kmeans", k = 2)
+fviz_nbclust(segundo_150_sca, kmeans, method = "silhouette") +
+  ggtitle("Número óptimo de clusters - k medias") +
+  labs(x="Número k de clusters",y="Anchura del perfil promedio")
+```
+
+Primeramente nos hemos servido del dendograma, pero observamos que es muy similar y que no vale para diferenciarlos.
+Como podemos apreciar las observaciones del cluster de los años 2010, están mejor agrupadas que las de 2014 ya que existen solapamientos y en la de 2010, están perfectamente separadas, y posee un mayor por centaje de varianza explicada. Y como indica el gráfico, los números óptimos de cluster son 2. 
+Si analizamos la silueta podemos observar que se han clasificado peor los datos de 2014 que los otros.
+```{r}
+##Haciendo kmeans <- 
+k2$centers
+k2$totss
+k2$withinss
+```
+##Comentar esto es la respuesta del 3
+```{r,include=TRUE,echo=TRUE}
+Cluster <- k2$cluster
+primer_150_sca <- cbind(primer_150_sca, Cluster)
+primer_150_sca <- as.data.frame(primer_150_sca)
+
+table(primer_150$EDAD, primer_150_sca$Cluster)
+table(primer_150$SEXO, primer_150_sca$Cluster)
+table(primer_150$ESTANCIA_MAYOR_ISLA_G2, primer_150_sca$Cluster)
+table(primer_150$PAIS_RESID_AGRUP, primer_150_sca$Cluster)
+table(primer_150$INGRESOS,primer_150_sca$Cluster)
+
+```
+*Tercera Pregunta*
+Por lo que podemos observar tanto las mujeres, como hombres prefieren el cluster 1, pero los hombres en mayor medida, desde el punto de vista de estancia mayor en la isla, la mayor diferencia que se observa es la de Lanzarote, ahí se diferencian los dos clusteres perfectamente.
+Desde el punto de vista del País, El grupo 1 da mejores valoraciones así, los británicos y españoles valoran mejor que los alemanes.
+Y en los ingresos se puede obervar que hay una diferencia muy grande de 24001 a 36000 eso quiere decir que ahí existe un salto salarial y con ese salto cambian de cluster. 
+```{r,include=TRUE,echo=TRUE}
+
+primer_150_unido$Centroides <- k2$cluster
+
+
+primer_150_unido %>% 
+  group_by(Centroides) %>% 
+  dplyr::summarize(conteo = n(), media_ingresos = mean(ingresos),media_edad = mean(primer_150.EDAD),media_Alojamiento_general = mean(Alojamiento_general),
+                   media_Restaurante_general= mean(Restaurante_general),media_entorno = mean(Entorno_general))
+
+
+```
+Aquí como podemos observar dentro del cluster 2 se situarán las personas con más ingresos, y más jóvenes, pero cuyas valoraciones de alojamiento, restaurante y entorno no son clave para definirse en un grupo u otro.
+
+*Pregunta 5*
+En el año 2010
+Como hemos podido observar, las valoraciones de los diferentes escenarios se reducen todos al Cluster 1, el cual como se puede observar posee una media de edad más alta, por tanto, podemos concluir que el Cluster 1 es un cluster con personas de mayor edad que el cluster 2, que las cuales poseen un perfil de más ingresos menos edad pero que no dan puntuaciones altas, como conclusión cabe pensar que las personas que dieron sus valoraciones t se metieron en el cluster2, son personas cuya idea del turismo es una idea más digamoslo fiestera y menos conservadora que los del 1, de ahí que tengan unos ingresos mayores.
+
+
+```{r,include=TRUE,echo=TRUE}
+
+segundo_150_unido$Centroides <- k2$cluster
+
+
+segundo_150_unido %>% 
+  group_by(Centroides) %>% 
+  dplyr::summarize(conteo = n(), media_ingresos = mean(ingresos),media_edad = mean(segundo_150.EDAD),media_Alojamiento_general = mean(Alojamiento_general),
+                   media_Restaurante_general= mean(Restaurante_general),media_entorno = mean(Entorno_general))
+
+
+```
+
+En el año 2014
+Como podemos observar se ha reducido la diferencia a lo largo de estos 4 años, tanto en edad como en media de los ingresos, por tanto cabe pensar que con el paso del tiempo, el turismo en canarias se ha vuelto mas conservador por asi decirlo, y las diferencias en edad e ingresos han aumentado.
+

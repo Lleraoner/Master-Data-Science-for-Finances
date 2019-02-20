@@ -1,0 +1,3 @@
+"0","autoplot(zMonthlyData) + geom_point() +"
+"0","  ylab(""Ventas"") + ggtitle(""Cuota mensual"") + xlab(""Semanas"") + "
+"0","  ggtitle('Representacion mensual')"

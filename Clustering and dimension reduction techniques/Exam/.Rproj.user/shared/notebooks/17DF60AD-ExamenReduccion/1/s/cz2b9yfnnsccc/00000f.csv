@@ -1,0 +1,2 @@
+"0","##Utilizamos imputePCA, para eliminar los valores faltantes."
+"0","fviz_eig(acp, addlabels = TRUE, hjust = 0) + labs(title(""Representacion""), x = ""Dimensiones"", y = ""Porcentaje de v explicada"") + theme_classic()"

@@ -1,0 +1,1 @@
+"0","text(0.4, 0.6, paste(AUC@y.name, ""\n"", round(unlist(AUC@y.values), 3)), cex = 0.7)"

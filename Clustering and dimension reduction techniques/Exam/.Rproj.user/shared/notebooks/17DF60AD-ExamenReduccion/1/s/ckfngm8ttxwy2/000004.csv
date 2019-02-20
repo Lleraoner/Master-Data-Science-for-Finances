@@ -1,0 +1,5 @@
+"0","## No podemos realizar CLARA por la cantidad de datos de los que disponemos"
+"0","require(cluster)"
+"0","viajeros_esp.clara=clara(primer_150_limpio, 2)"
+"0","require(factoextra)"
+"0","fviz_cluster(viajeros_esp.clara, stand = TRUE, geom = ""point"", pointsize = 1)"

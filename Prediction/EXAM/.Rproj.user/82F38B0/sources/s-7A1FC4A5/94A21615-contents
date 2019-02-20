@@ -1,0 +1,182 @@
+---
+title: "Pregunta2"
+author: "Luis Llera García"
+date: "1 de febrero de 2019"
+output: pdf_document
+---
+```{r, include =FALSE,echo =FALSE}
+
+library(openxlsx)
+library(forecast)
+library(xts)
+library(ggplot2)
+library(ggfortify)
+library(TSA)
+library(lmtest)
+load("C:/Users/llera/OneDrive/Escritorio/EXAMEN PREDICCION/CP02.Rdata")
+weeklyData <- to.weekly(d.data)
+zWeeklyData <- as.zoo(weeklyData$d.data.Close)
+names(zWeeklyData) <- 'Semanal'
+
+#Primera aproximacion semanal
+autoplot(zWeeklyData) + geom_point() +
+  ylab("Ventas") + ggtitle("Cuota semanal") + xlab("Semanas") + 
+  ggtitle('Representacion semanal')
+
+
+monthlyData <- to.monthly(d.data)
+zMonthlyData <- as.zoo(monthlyData$d.data.Close)
+names(zMonthlyData) <- 'Mensual'
+
+#Primera aproximacion mensual
+autoplot(zMonthlyData) + geom_point() +
+  ylab("Ventas") + ggtitle("Cuota mensual") + xlab("Semanas") + 
+  ggtitle('Representacion mensual')
+
+cOmit = 0
+nObsWeek = length(zWeeklyData)
+nObsMonth = length(zMonthlyData)
+
+oVentasWeekly <- window(zWeeklyData, start = index(zWeeklyData[1]), end = index(zWeeklyData[nObsWeek - cOmit]))
+oVentasMonthly <- window(zMonthlyData, start = index(zMonthlyData[1]), end = index(zMonthlyData[nObsMonth - cOmit]))
+
+#Obsevamos que no podemos usar el modelo arima con la serie semanal asi que usaremos modelos ETS
+# PRIMERO COMENZAMOS CON UN ARIMA
+#ARIMA MODEL
+fit.semanal = auto.arima(oVentasWeekly,lambda=0, ic = "aic") #lamba 0 es aplicar el logaritmo
+summary(fit.semanal) #ARIMA(0,1,0)  
+
+fit.mensual = auto.arima(oVentasMonthly,lambda=0, ic = "aic")
+summary(fit.mensual) #ARIMA(2,0,2)(2,0,0) # TIENE COMPONENTE ESTACIONAL
+
+#residual analysis
+ggtsdisplay(fit.semanal$residuals)
+ggtsdisplay(fit.mensual$residuals)
+# no significativas las autocorrelaciones segun test BLJ
+
+#box-Ljung Test
+Box.test(fit.semanal$residuals,lag=4, fitdf=3, type="Lj") # NO OBTENEMOS SOLUCION
+Box.test(fit.mensual$residuals,lag=4, fitdf=3, type="Lj") # ruido blanco
+
+fsemanal.arima=forecast(fit.semanal, h=4)
+fmensual.arima=forecast(fit.mensual, h=1)
+
+Box.test(fsemanal.arima$residuals,lag=4, fitdf=3, type="Lj") # NO OBTENEMOS SOLUCION
+Box.test(fmensual.arima$residuals,lag=4, fitdf=3, type="Lj") # ruido blanco
+
+plot(fsemanal.arima)
+plot(fmensual.arima)
+fsemanal.arima #modelo con la prediccion de 4 semanas = agosto 2018
+fmensual.arima # modelo con la prediccion de 1 mes = agosto 2018
+
+
+# DESPUES PROBAMOS CON MODELO ETS
+## Select automatic ETS
+etsfit<- ets(oVentasWeekly, ic = "aic") # Estimacion del modelo automatica
+etsfit2 <- ets(oVentasMonthly, ic = "aic")
+
+
+etsfit # nuestro modelo semanal: ETS(A,N,N) error aditivo, tendencia ninguna, componente estacional ninguno.
+etsfit2 # nuestro modelo mensual: ETS(M,N,M) error multiplicativo, tendencia ninguna, componente estacional multiplicativo.
+
+
+#forecast model
+fsemanal.ets = forecast(etsfit, h = 4) # Aqui tienes las predicciones
+fmensual.ets = forecast(etsfit2, h = 1)
+#Results
+summary(fsemanal.ets) # Los resultados de las predicciones y sus intervalos de confianza
+summary(fmensual.ets)
+
+#Plot
+plot(fsemanal.ets) # malas predicciones
+plot(fmensual.ets) # mejores predicciones
+fsemanal.ets
+fmensual.ets
+
+summary(fsemanal.ets) # Los resultados de las predicciones y sus intervalos de confianza
+summary(fmensual.ets)
+zMonthlyData
+```
+
+*Series Temporales*
+El objetivo del siguiente informe será realizar la predicciones semanales y mensuales de agosto de 2018, mediante los modelos ARIMA y ETS. En la que se explicaba que se había producido una caída del turismo en Lanzarote en el verano del 2017,y con ello lo que se pretende es identificar y si diera tiempo reconducir dicho impacto.
+Primeramente vamos a realizar la predicción semanal, por tanto tenemos que pasar los datos a semanales para trabajar con ellos, y comprobamos el tipo de serie que es, como se produce un aumento claro en la serie temporal pero vuelve a su estado inicial podremos afirmar que es un impulso.
+
+Primeramente hemos tratado las variables con el paquete zoo, y representamos una primera aproximación.
+```{r , include=TRUE,echo=TRUE}
+autoplot(zWeeklyData) + geom_point() +
+  ylab("Ventas") + ggtitle("Cuota semanal") + xlab("Semanas") + 
+  ggtitle('Representacion semanal')
+```
+Más tarde, establecemos el numero de observaciones que que hemos omitir, cOmit, como no tenemos los datos del mes de agosto debemos de trabajar con la serie al completo.
+
+```{r,include=TRUE,echo=TRUE}
+autoplot(zMonthlyData) + geom_point() +
+  ylab("Ventas") + ggtitle("Cuota mensual") + xlab("Semanas") + 
+  ggtitle('Representacion mensual')
+```
+*ARIMA*
+De la misma manera pasa con los datos mensuales la diferencia es que esta si que tiene, sobre todo, un outlier significativo y es un impulso por que vuelve al estado original. Se va a realizar a continuación una primera aproximación por el modelo ARIMA.
+Ahora con la función auto.arima elegiremos los mejores modelos tanto para mensual como para semanal, teniendo en cuenta el criterio de menor AIC, para la semanal nos arroja un modelo ARIMA(0,1,0). Y para el mensual ARIMA(2,0,2)(2,0,0)[12] with non-zero mean.
+Como el de las semanales no tiene componente estacional, debemos de utilizar el ETS, para los semanales, y como el mensual si que tiene pues le aplicaremos un modelo 
+Depués realizamos La prueba de Ljung-Box que es un tipo de prueba estadística de si un grupo cualquiera de autocorrelaciones de una serie de tiempo son diferentes de cero, por tanto si hacemos ese test de los residuos, por tanto buscamos aceptar la hipótesis nula de que los residuos son ruido blanco y no nos influyen en el modelo. Al comprobarlo con 4 lags, nos arroja un p-valor muy alto, por encima del 0.05 por tanto son ruido blanco. Graficamente se ve perfecto. Si se encuentran dentro de las bandas azules son ruido blanco, como nos ocurre a nosotros
+
+```{r,include=TRUE,echo=TRUE}
+ggtsdisplay(fit.mensual$residuals)
+```
+
+Ahora observamos el Forecast del mensua, con un modelo arima, es decir, la prección, las bandas azules indican por donde puede fluctuar la serie como podemos observar tiene unas bandas bastante amplias. 
+```{r include=TRUE, echo=TRUE}
+plot(fmensual.arima)
+
+```
+*ETS*
+Ahora realizamos el modelo ets con el mensual y el semmanal.
+```{r,include=TRUE, echo=TRUE}
+etsfit # nuestro modelo semanal: ETS(A,N,N) error aditivo, tendencia ninguna, componente estacional ninguno.
+etsfit2 # nuestro modelo mensual: ETS(M,N,M) error multiplicativo, tendencia ninguna, componente estacional multiplicativo.
+```
+Como podemos observar nuestro modelo semanal ETS ,ETS(A,N,N), nos indica que no tiene tendencia ni componente estacional, a diferencia del mensual, ETS(M,N,M), que tiene error multiplicativo, sin tendencia y con un componente estacional multiplicativo.
+
+```{r ,include=TRUE, echo=TRUE}
+plot(fsemanal.ets) # malas predicciones
+plot(fmensual.ets)
+```
+Como podemos observar las predicciones semanales son bastante malas por tanto las desechamos, pero de las mensuales, como podemos observar, se parece mucho al forecast que hemos realizado anteriormente, son buenas predicciones.
+
+```{r,include=TRUE, echo=TRUE}
+summary(fsemanal.ets) # Los resultados de las predicciones y sus intervalos de confianza
+summary(fmensual.ets)
+tail(zMonthlyData,25)
+```
+
+Y por último podemos observar la evolucion de lo valores de Julio,de 2000 como mínimo ha bajado a un 950, por tanto la predicción de crecimiento es basicamente negativa.
+Si comparamos los valores de junio y julio de 2018 (1849 y 950) se estima un valor de 1859.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

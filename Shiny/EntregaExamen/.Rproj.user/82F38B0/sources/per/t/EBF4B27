@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1550255666846.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3549151555",
+    "id" : "EBF4B27",
+    "lastKnownWriteTime" : 1550256223,
+    "last_content_update" : 1550256223193,
+    "path" : "C:/Users/llera/OneDrive/Escritorio/ExamenVisualizacion/EntregaExamen/Luis_Llera_Shiny/server.R",
+    "project_path" : "server.R",
+    "properties" : {
+        "cursorPosition" : "23,4",
+        "scrollLine" : "13"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

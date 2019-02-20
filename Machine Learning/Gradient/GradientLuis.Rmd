@@ -1,0 +1,121 @@
+---
+title: "Gradient"
+author: "Luis Llera García"
+date: "4 de diciembre de 2018"
+output: html_document
+---
+
+```{r}
+#We have to load the data
+
+data <- read.csv("4_1_data.csv")
+#We use the sigmoid function defined in the rmd 1
+Sigmoid <- function(x) { 
+  1 / (1 + exp(-x))
+}
+#in the same way with the cost function
+CostFunction <- function(parameters, X, Y) {
+  n <- nrow(X)
+# we apply matrix multiplication
+  g <- Sigmoid(X %*% parameters)
+  J <- (1/n) * sum((-Y * log(g)) - ((1 - Y) * log(1 - g)))
+  return(J)
+}
+
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+```{r}
+
+TestGradientDescent <- function(iterations = 10000, X, Y) {
+  
+  # Initialize (b, W)
+  parameters <- rep(0, ncol(X))
+  # Check evolution
+  print(paste("Initial Cost Function value: ", 
+              convergence <- c(CostFunction(parameters, X, Y)), sep = ""))
+  
+  # updating (b, W) using gradient update
+  
+  # Derive theta using gradient descent using optim function
+  # Look for information about the "optim" function (there are other options)
+  parameters_optimization <- optim(par = parameters, fn = CostFunction, X = X, Y = Y, 
+                                   control = list(maxit = iterations))
+  #set parameters
+  parameters <- parameters_optimization$par
+  
+  # Check evolution
+  print(paste("Final Cost Function value: ", 
+              convergence <- c(CostFunction(parameters, X, Y)), sep = ""))
+
+ return(parameters) 
+}
+```
+
+
+```{r}
+
+X <- as.matrix(data[, c(1,2)])
+X <- cbind(rep(1, nrow(X)), X)
+Y <- as.matrix(data$label)
+```
+
+
+
+Exercise 1
+
+```{r}
+parameters <- TestGradientDescent(X = X, Y = Y)
+exercise_data <- subset(data, select = c(score.1, score.2))
+exercise_data <- cbind(initial = 1, exercise_data)
+
+data_prob <- 0
+for(i in 1:nrow(exercise_data)){
+  res <- Sigmoid(t(as.numeric(exercise_data[i,])) %*% parameters)
+  data_prob <- rbind(data_prob, res)
+}
+
+#La primera linea de este dataframe no tiene info
+data_prob <- as.data.frame(data_prob)
+data_prob <- data_prob[-1,]
+
+#Dataframe original + las probabilidades
+final_data <- cbind(data, prob = data_prob)
+table(final_data$label, ifelse(final_data$prob > 0.68, 1, 0))
+```
+
+
+
+
+Exercise 2 - From approximately 300 iterations the result is statistical
+
+```{r}
+iterations_error <- cbind(0,0)
+colnames(iterations_error) <- c("Iterations","Convergence")
+
+set.seed(123)
+for (i in seq(1:750)) {
+  parameters <- TestGradientDescent(iterations = i, X = X, Y = Y)
+  convergence <- c(CostFunction(parameters, X, Y))
+  output <- cbind(i,round(convergence,5))
+  colnames(output) <- c("iterations","convergence")
+  iterations_error <- rbind(iterations_error,output)
+}
+
+```
+
+
+Graphic representation
+
+```{r}
+library(ggplot2)
+iterations_error <- as.data.frame(iterations_error)
+ggplot(iterations_error,aes(x=iterations_error$Iterations ,y=iterations_error$Convergence)) + geom_smooth() + xlab('Iterations') + ylab('Convergence')
+```

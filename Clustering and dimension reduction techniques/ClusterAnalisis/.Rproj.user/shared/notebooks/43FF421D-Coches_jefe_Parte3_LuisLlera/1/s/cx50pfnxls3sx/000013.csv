@@ -1,0 +1,6 @@
+"0","#Restalamos las observaciones que actúan como mediodes"
+"0","fviz_cluster(object = pam_clusters, data = coches, ellipse.type = ""t"","
+"0","             repel = TRUE) +"
+"0","  geom_point(data = medoids, color = ""firebrick"", size = 2) +"
+"0","  labs(title = ""Resultados clustering PAM"") +"
+"0","  theme(legend.position = ""none"")"

@@ -1,0 +1,34 @@
+---
+title: "Resumen"
+author: "Luis Llera García"
+date: "30 de enero de 2019"
+output: pdf_document
+---
+
+
+
+*Resumen*
+
+El objetivo de este resumen, es comentar todos los procesos que hemos realizado, representar las valoraciones de Islas canarias atráves de un Cluster, Nos hemos visto obligados a tratar de nuevo las variables ya que existían problemas de multicolinealidad en los datos, por tanto las agrupamos en entorno en alojamiento y en paisaje, al igual que los ingresos nos hemos visto obligados a reestructurarlo.
+
+Más tarde hemos realizado la pruebas previas al análisis que ha sido el estadístico de Hopkins que nos arroja unos resultados positivos, y por tanto hemos continuado con el análisis
+
+Por tanto, con los resultados obtenidos podemos realizar, el análisis cluster, el método que utilizaremos será el K-means, el cual, es el que mejor se adecua a nuestros datos. Ya que hemos probado con otros métodos como el Clara, que no tenía sentido ya que solo tiene sentido para muestras grandes. Y el PAM, que no nos arroja malos resultados, pero contrasta con el K-means con que es más robusto y corrige outliers, cosa que no tenemos.
+Por tanto utilizaremos el K-means, que es muy bueno para ver cómo se organizan sus individuos de forma natural, por tanto hemos optado por este método.
+
+Ahora realizamos la representación gráfica, nos hemos servido del dendograma, pero observamos que es muy similar y que no vale para diferenciarlos.
+Como podemos apreciar las observaciones del cluster de los años 2010, están mejor agrupadas ya que existen solapamientos en las de 2014 y en la de 2010, están perfectamente separadas, y posee un mayor por centaje de varianza explicada. Y como indica el gráfico, los números óptimos de cluster son 2. Si analizamos la silueta podemos observar que se han clasificado peor los datos de 2014 que los otros, por tanto es más correcta la segmentación en los primeros años.
+
+Más tarde al extraer las tablas que nos muestra la pertenencia de cada observación a cada Cluster por lo que podemos observar tanto las mujeres, como hombres prefieren el cluster 1, pero los hombres en mayor medida. Desde el punto de vista de estancia mayor en la isla, la mayor diferencia que se observa es la de Lanzarote, ahí se diferencian los dos clusteres perfectamente.
+Desde el punto de vista del País, el grupo 1 da mejores valoraciones así, los británicos y españoles valoran mejor que los alemanes.
+Y en los ingresos se puede obervar que hay una diferencia muy grande de 24001 a 36000 eso quiere decir que ahí existe un salto salarial y con ese salto cambian de cluster. 
+
+Dentro del cluster 2 se situarán las personas con más ingresos, y más jóvenes, pero cuyas valoraciones de alojamiento, restaurante y entorno no son clave para definirse en un grupo u otro.
+
+Por tanto resolviendo el problema de negocio que se nos plantea, las respuestas en función de los dos clusteres o los dos años serán las siguientes.
+
+En el año 2010 como hemos podido observar, las valoraciones de los diferentes escenarios se reducen todos al Cluster 1, el cual como se puede observar posee una media de edad más alta, por tanto, podemos concluir que el Cluster 1 es un cluster con personas de mayor edad que el cluster 2, que las cuales poseen un perfil de más ingresos menos edad pero que no dan puntuaciones altas, como conclusión cabe pensar que las personas que dieron sus valoraciones t se metieron en el cluster2, son personas cuya idea del turismo es una idea más digamoslo fiestera y menos conservadora que los del 1, de ahí que tengan unos ingresos mayores.
+
+En el año 2014 como podemos observar se ha reducido la diferencia a lo largo de estos 4 años, tanto en edad como en media de los ingresos, por tanto cabe pensar que con el paso del tiempo, el turismo en canarias se ha vuelto mas conservador por asi decirlo, y las diferencias en edad e ingresos han aumentado.
+
+Por tanto el turismo en canarias con el paso de los años ha mejorado, para los padres y madres de familias y se han reducido las vacaciones de las personas tan jóvenes para la fiesta, como ha ocurrido en España con zonas como Salou, Mojacar... pero en sentido inverso.

@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1550661736410.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3664671329",
+    "id" : "BA5406DF",
+    "lastKnownWriteTime" : 1550662254,
+    "last_content_update" : 1550662254096,
+    "path" : "C:/Users/llera/OneDrive/GitProjects/Master Data Science For Finances/Clasification/Discriminant Analysis/DIris.R",
+    "project_path" : "DIris.R",
+    "properties" : {
+        "cursorPosition" : "20,54",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

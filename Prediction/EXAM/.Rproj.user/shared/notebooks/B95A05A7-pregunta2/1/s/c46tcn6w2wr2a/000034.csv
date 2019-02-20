@@ -1,0 +1,142 @@
+"0","# DESPUES PROBAMOS CON MODELO ETS"
+"0","## Select automatic ETS"
+"0","etsfit<- ets(oVentasWeekly, ic = ""aic"") # Estimacion del modelo automatica"
+"2","Missing values encountered. Using longest contiguous portion of time series"
+"0","etsfit2 <- ets(oVentasMonthly, ic = ""aic"")"
+"0","etsfit # nuestro modelo semanal: ETS(A,N,N) error aditivo, tendencia ninguna, componente estacional ninguno."
+"1","ETS(A,N,N) 
+
+"
+"1","Call:
+ ets(y = oVentasWeekly, ic = ""aic"") 
+
+"
+"1","  Smoothing parameters:
+"
+"1","    alpha = 0.2 
+"
+"1","
+  Initial states:
+"
+"1","    l = 1532 
+"
+"1","
+  sigma:  "
+"1","581.9489"
+"0","etsfit2 # nuestro modelo mensual: ETS(M,N,M) error multiplicativo, tendencia ninguna, componente estacional multiplicativo."
+"1","ETS(M,N,M) 
+
+"
+"1","Call:
+ ets(y = oVentasMonthly, ic = ""aic"") 
+
+"
+"1","  Smoothing parameters:
+"
+"1","    alpha = 1e-04 
+"
+"1","    gamma = 1e-04 
+"
+"1","
+  Initial states:
+"
+"1","    l = 1518.8527 
+"
+"1","    s = "
+"1","0.836"
+"1"," "
+"1","0.8312"
+"1"," "
+"1","1.0531"
+"1"," "
+"1","1.0355"
+"1"," "
+"1","1.2239"
+"1"," "
+"1","1.3848"
+"1","
+           "
+"1","0.9953"
+"1"," "
+"1","0.7832"
+"1"," "
+"1","0.9248"
+"1"," "
+"1","1.1039"
+"1"," "
+"1","1.0407"
+"1"," "
+"1","0.7876"
+"1","
+"
+"1","
+  sigma:  "
+"1","0.3316"
+"1","
+
+"
+"1","     AIC "
+"1","    AICc "
+"1","     BIC "
+"1","
+"
+"1","1988.399 "
+"1","1993.248 "
+"1","2029.573 "
+"1","
+"
+"0","#forecast model"
+"0","fsemanal.ets = forecast(etsfit, h = 4) # Aqui tienes las predicciones"
+"0","fmensual.ets = forecast(etsfit2, h = 1)"
+"0","#Results"
+"0","summary(fsemanal.ets) # Los resultados de las predicciones y sus intervalos de confianza"
+"1","
+Forecast method: ETS(A,N,N)"
+"1","
+
+Model Information:
+"
+"1","ETS(A,N,N) 
+
+"
+"1","Call:
+ ets(y = oVentasWeekly, ic = ""aic"") 
+
+"
+"1","  Smoothing parameters:
+"
+"1","    alpha = 0.2 
+"
+"1","
+  Initial states:
+"
+"1","    l = 1532 
+"
+"1","
+  sigma:  "
+"1","581.9489"
+"1","
+Error measures:
+"
+"1","            "
+"1","    ME"
+"1","     RMSE"
+"1","   MAE"
+"1","      MPE"
+"1","     MAPE"
+"1"," MASE"
+"1"," ACF1"
+"1","
+Training set"
+"1"," 411.5"
+"1"," 581.9489"
+"1"," 411.5"
+"1"," 17.47346"
+"1"," 17.47346"
+"1","  0.5"
+"1"," -0.5"
+"1","
+"
+"1","
+Forecasts:
+"

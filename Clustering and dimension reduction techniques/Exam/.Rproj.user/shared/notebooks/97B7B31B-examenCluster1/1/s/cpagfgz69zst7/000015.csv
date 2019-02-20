@@ -1,0 +1,3 @@
+"0","fviz_nbclust(segundo_150_sca, kmeans, method = ""silhouette"") +"
+"0","  ggtitle(""Número óptimo de clusters - k medias"") +"
+"0","  labs(x=""Número k de clusters"",y=""Anchura del perfil promedio"")"

@@ -1,0 +1,51 @@
+"0","summary(fsemanal.ets) # Los resultados de las predicciones y sus intervalos de confianza"
+"1","
+Forecast method: ETS(A,N,N)"
+"1","
+
+Model Information:
+"
+"1","ETS(A,N,N) 
+
+"
+"1","Call:
+ ets(y = oVentasWeekly, ic = ""aic"") 
+
+"
+"1","  Smoothing parameters:
+"
+"1","    alpha = 0.2 
+"
+"1","
+  Initial states:
+"
+"1","    l = 1532 
+"
+"1","
+  sigma:  "
+"1","581.9489"
+"1","
+Error measures:
+"
+"1","            "
+"1","    ME"
+"1","     RMSE"
+"1","   MAE"
+"1","      MPE"
+"1","     MAPE"
+"1"," MASE"
+"1"," ACF1"
+"1","
+Training set"
+"1"," 411.5"
+"1"," 581.9489"
+"1"," 411.5"
+"1"," 17.47346"
+"1"," 17.47346"
+"1","  0.5"
+"1"," -0.5"
+"1","
+"
+"1","
+Forecasts:
+"

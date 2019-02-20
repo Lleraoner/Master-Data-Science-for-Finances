@@ -1,0 +1,130 @@
+---
+title: "Modelo de series temporales"
+author: "Álvaro Ferro Pérez"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Resumen ejecutivo
+
+Se nos ha proporcionado la variable d.data con datos diarios sobre visitantes en el centro 'Jameos del Agua'. Lo primero que hemos hecho ha sido pasar los datos a semanal y mensual a través del paquete zoo y hacer una primera aproximación gráfica de los datos.
+
+
+```{r, include=FALSE, echo=FALSE}
+library(openxlsx)
+library(forecast)
+library(xts)
+library(ggplot2)
+library(ggfortify)
+library(TSA)
+library(lmtest)
+
+weeklyData <- to.weekly(d.data)
+zWeeklyData <- as.zoo(weeklyData$d.data.Close)
+names(zWeeklyData) <- 'Semanal'
+```
+
+```{r, include=FALSE, echo=FALSE}
+monthlyData <- to.monthly(d.data)
+zMonthlyData <- as.zoo(monthlyData$d.data.Close)
+names(zMonthlyData) <- 'Mensual'
+```
+
+Plot semanal de los datos
+```{r}
+#Primera aproximacion semanal
+autoplot(zWeeklyData) + geom_point() +
+  ylab("Ventas") + ggtitle("Cuota semanal") + xlab("Semanas") + 
+  ggtitle('Representacion semanal')
+```
+
+Plot mensual de los datos
+```{r}
+#Primera aproximacion mensual
+autoplot(zMonthlyData) + geom_point() +
+  ylab("Ventas") + ggtitle("Cuota mensual") + xlab("Semanas") + 
+  ggtitle('Representacion mensual')
+```
+
+A continuación se establece el numero de observaciones que se van a omitir, en este caso 0, ya que se nos pide la predicción para el mes de agosto, datos de los cuales no disponemos, así que trabajaremos con la serie entera. 
+
+Se va a realizar a continuación una primera aproximación por el modelo ARIMA.
+
+```{r ,include=FALSE, echo=FALSE}
+cOmit = 0
+nObsWeek = length(zWeeklyData)
+nObsMonth = length(zMonthlyData)
+
+oVentasWeekly <- window(zWeeklyData, start = index(zWeeklyData[1]), end = index(zWeeklyData[nObsWeek - cOmit]))
+oVentasMonthly <- window(zMonthlyData, start = index(zMonthlyData[1]), end = index(zMonthlyData[nObsMonth - cOmit]))
+```
+
+```{r, include=TRUE, echo=FALSE}
+fitWeek = auto.arima(oVentasWeekly,lambda=0, ic = "aic")
+summary(fitWeek)  
+
+fitMonth = auto.arima(oVentasMonthly,lambda=0, ic = "aic")
+summary(fitMonth)
+```
+
+Como puede observarse, en semanal estamos antes un modelo (0, 1, 0) sin componente estacional y el mensual es un ARIMA(2, 0, 2) con componente estacional (2, 0, 0)
+
+```{r}
+ggtsdisplay(fitWeek$residuals)
+ggtsdisplay(fitMonth$residuals)
+Box.test(fitWeek$residuals,lag=4, fitdf=3, type="Lj")
+Box.test(fitMonth$residuals,lag=4, fitdf=3, type="Lj")
+```
+El análisis de los residuos en el caso semanal no se realiza de manera adecuada mientras que en mensual nos indica que los residuos son ruido blanco.
+
+Podemos obtener una primera aproximación de la prediccion tanto semanal como mensual.
+
+```{r}
+fweek.arima=forecast(fitWeek, h=4)
+fmonth.arima=forecast(fitMonth, h=1)
+```
+
+```{r, include=TRUE, echo=TRUE}
+plot(fweek.arima)
+plot(fmonth.arima)
+fweek.arima
+fmonth.arima
+```
+
+Lo siguiente es realizar una aproximación por los modelos ETS:
+```{r}
+etsfit<- ets(oVentasWeekly, ic = "aic")
+etsfit2 <- ets(oVentasMonthly, ic = "aic")
+
+etsfit
+etsfit2
+```
+
+Como vemos en el caso de semanal tenemos un modelo ETS(A, N, N) lo que indica que contiene error aditivo, sin tendencia y sin componente estacional
+
+En el caso del mensual tenemos un ETS(M, N, M), error multiplicativo sin tendencia y un componente estacional multiplicativo.
+
+A continuación se realiza y grafica la predicción:
+
+```{r}
+
+fweek.ets = forecast(etsfit, h = 4)
+fmonth.ets = forecast(etsfit2, h = 1)
+
+summary(fweek.ets)
+summary(fmonth.ets)
+
+```
+
+```{r}
+#Plot
+plot(fsemanal.ets)
+plot(fmensual.ets)
+fsemanal.ets
+fmensual.ets
+```
+
+Como vemos la predicción semanal no es tan buena como debería y en cuanto a la mensual y al ser solo 1 mes el que tenemos que predecir lo podemos dar por válido.

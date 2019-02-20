@@ -1,0 +1,70 @@
+"0","library(memisc)"
+"2","Loading required package: lattice
+"
+"2","Loading required package: MASS
+"
+"2","
+Attaching package: ‘memisc’
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    contr.sum, contr.treatment, contrasts
+
+"
+"2","The following object is masked from ‘package:base’:
+
+    as.array
+
+"
+"0","library(haven)"
+"0","library(foreign)"
+"0","library(dplyr)"
+"2","
+Attaching package: ‘dplyr’
+
+"
+"2","The following objects are masked from ‘package:memisc’:
+
+    collect, recode, rename, syms
+
+"
+"2","The following object is masked from ‘package:MASS’:
+
+    select
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+"
+"0","library(factoextra)"
+"2","Loading required package: ggplot2
+"
+"2","Find out what's changed in ggplot2 at https://github.com/tidyverse/ggplot2/releases.
+"
+"2","
+Attaching package: ‘ggplot2’
+
+"
+"2","The following object is masked from ‘package:memisc’:
+
+    syms
+
+"
+"2","Welcome! Related Books: `Practical Guide To Cluster Analysis in R` at https://goo.gl/13EFCZ
+"
+"0","library(cluster)"
+"0","library(factoextra)"
+"0","require(clustertend)"
+"2","Loading required package: clustertend
+"
+"0","library(""NbClust"")"
+"0","library(FactoMineR)"
+"0","set.seed(123)"

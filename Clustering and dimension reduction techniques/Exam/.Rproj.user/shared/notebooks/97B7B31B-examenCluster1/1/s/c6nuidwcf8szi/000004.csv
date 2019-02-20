@@ -1,0 +1,5 @@
+"0","primer_150_unido$Centroides <- k2$cluster"
+"0","primer_150_unido %>% "
+"0","  group_by(Centroides) %>% "
+"0","  dplyr::summarize(conteo = n(), media_ingresos = mean(ingresos),media_edad = mean(primer_150.EDAD),media_Alojamiento_general = mean(Alojamiento_general),"
+"0","                   media_Restaurante_general= mean(Restaurante_general),media_entorno = mean(Entorno_general))"
