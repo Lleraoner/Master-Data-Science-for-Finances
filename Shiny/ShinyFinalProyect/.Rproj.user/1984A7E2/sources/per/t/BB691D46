@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1550502020605.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3220052888",
+    "id" : "BB691D46",
+    "lastKnownWriteTime" : 1550510118,
+    "last_content_update" : 1550510118405,
+    "path" : "C:/Users/alvar/Desktop/Llera/Test.R",
+    "project_path" : "Test.R",
+    "properties" : {
+        "cursorPosition" : "25,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

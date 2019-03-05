@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1550510792971.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2429686194",
+    "id" : "FCFB1A69",
+    "lastKnownWriteTime" : 1550793323,
+    "last_content_update" : 1550793323550,
+    "path" : "C:/Users/llera/OneDrive/Escritorio/Trabajoshiny/server.R",
+    "project_path" : "server.R",
+    "properties" : {
+        "cursorPosition" : "86,59",
+        "scrollLine" : "71"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1550793036830.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2250546919",
+    "id" : "D0348471",
+    "lastKnownWriteTime" : 1550793319,
+    "last_content_update" : 1550793319585,
+    "path" : "C:/Users/llera/OneDrive/Escritorio/Trabajoshiny/ui.R",
+    "project_path" : "ui.R",
+    "properties" : {
+        "cursorPosition" : "28,83",
+        "scrollLine" : "13"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
